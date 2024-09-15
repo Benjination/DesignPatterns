@@ -1,6 +1,8 @@
 import javax.swing.*;
+import javax.swing.border.Border;
+
 import java.awt.*;
-import java.awt.event.*;
+//import java.awt.event.*;
 
 public class BoothFloorPlan extends JFrame {
     private JPanel mainPanel;
@@ -8,10 +10,12 @@ public class BoothFloorPlan extends JFrame {
     private Shape selectedShape;
 
     public BoothFloorPlan() {
-        setTitle("Shape Selector");
+        setTitle("Booth Floor Plan");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
+
+        
 
         // Create menu
         JMenuBar menuBar = new JMenuBar();
@@ -27,6 +31,10 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.setPreferredSize(new Dimension(150, 400));
         shapePanel.setLayout(new BoxLayout(shapePanel, BoxLayout.Y_AXIS));
         add(shapePanel, BorderLayout.WEST);
+        Border shapePanelBorder = BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+        BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        shapePanel.setBorder(shapePanelBorder);
 
         // Create main panel
         mainPanel = new JPanel() {
@@ -38,6 +46,10 @@ public class BoothFloorPlan extends JFrame {
                 }
             }
         };
+        Border mainPanelBorder = BorderFactory.createCompoundBorder(
+        BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
+        BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        mainPanel.setBorder(mainPanelBorder);
 
 
         add(mainPanel, BorderLayout.CENTER);
@@ -47,6 +59,8 @@ public class BoothFloorPlan extends JFrame {
         addShape("Oval", new Oval(50, 50, 100, 60));
         addShape("Triangle", new Triangle(50, 50, 100, 60));
     }
+
+    
 
     private void addShape(String name, Shape shape) {
         JButton button = new JButton(name);
