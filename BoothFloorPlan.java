@@ -56,9 +56,9 @@ public class BoothFloorPlan extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
         
         // Add shapes to shape panel
-        addShape("Large", 100, 60);
-        addShape("Medium", 50, 30);
-        addShape("Small", 30, 30);
+        addShape("Large", 100, 60, Color.BLUE);
+        addShape("Medium", 50, 30, Color.GREEN);
+        addShape("Small", 30, 30, new Color(128, 0, 128)); // Purple
 
         // Add clear button
         JButton clearButton = new JButton("Clear");
@@ -70,10 +70,10 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(clearButton);
     }
 
-    private void addShape(String name, int width, int height) {
+    private void addShape(String name, int width, int height, Color color) {
         JButton button = new JButton(name);
         button.addActionListener(e -> {
-            CustomRectangle newShape = generateNonOverlappingShape(width, height);
+            CustomRectangle newShape = generateNonOverlappingShape(width, height, color);
             if (newShape != null) {
                 shapes.add(newShape);
                 mainPanel.repaint();
@@ -84,12 +84,12 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(button);
     }
 
-    private CustomRectangle generateNonOverlappingShape(int width, int height) {
+    private CustomRectangle generateNonOverlappingShape(int width, int height, Color color) {
         int maxAttempts = 100;
         for (int i = 0; i < maxAttempts; i++) {
             int x = getRandomX(width);
             int y = getRandomY(height);
-            CustomRectangle newShape = new CustomRectangle(x, y, width, height);
+            CustomRectangle newShape = new CustomRectangle(x, y, width, height, color);
             if (!overlapsWithExistingShapes(newShape)) {
                 return newShape;
             }
@@ -123,16 +123,21 @@ public class BoothFloorPlan extends JFrame {
 
     class CustomRectangle implements Shape {
         private int x, y, width, height;
+        private Color color;
 
-        public CustomRectangle(int x, int y, int width, int height) {
+        public CustomRectangle(int x, int y, int width, int height, Color color) {
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
+            this.color = color;
         }
 
         @Override
         public void draw(Graphics g) {
+            g.setColor(color);
+            g.fillRect(x, y, width, height);
+            g.setColor(Color.BLACK);
             g.drawRect(x, y, width, height);
         }
 
