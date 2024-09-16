@@ -42,7 +42,8 @@ public class BoothFloorPlan extends JFrame {
                 BorderFactory.createEmptyBorder(5, 5, 5, 5));
         shapePanel.setBorder(shapePanelBorder);
 
-        // Create main panel
+        // Create main panel and draws all existing shapes in shapes array
+        //Iterator
         mainPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -74,7 +75,8 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(Box.createVerticalStrut(20));
         shapePanel.add(clearButton);
     }
-    //End GUI Build Aesthetics Complete
+    //End GUI Build Aesthetics
+    //Start Gui Functions
 
     //Generates New Shape
     private void addShape(String name, int width, int height, Color color) {
