@@ -10,6 +10,9 @@ public class BoothFloorPlan extends JFrame {
     private ArrayList<Shape> shapes;
     private Random random;
 
+    //Floor Plan Manager
+    //Begin GUI Display screen
+    //Begins Code for Building all aesthetics
     public BoothFloorPlan() {
         random = new Random();
         shapes = new ArrayList<>();
@@ -27,6 +30,7 @@ public class BoothFloorPlan extends JFrame {
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
+
 
         // Create shape panel
         shapePanel = new JPanel();
@@ -48,6 +52,7 @@ public class BoothFloorPlan extends JFrame {
                 }
             }
         };
+        //Creates Border on Drawing area
         Border mainPanelBorder = BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.DARK_GRAY, 2),
                 BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -69,21 +74,24 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(Box.createVerticalStrut(20));
         shapePanel.add(clearButton);
     }
+    //End GUI Build Aesthetics Complete
 
+    //Generates New Shape
     private void addShape(String name, int width, int height, Color color) {
-        JButton button = new JButton(name);
+        JButton button = new JButton(name);  //Creates shape based on name (Small Medium Large)
         button.addActionListener(e -> {
             CustomRectangle newShape = generateNonOverlappingShape(width, height, color);
             if (newShape != null) {
-                shapes.add(newShape);
-                mainPanel.repaint();
-            } else {
+                shapes.add(newShape);  //Adds shape to array of selected shapes
+                mainPanel.repaint();   //Recreates Floor Plan
+            } else {                   //Breaks when there is no more space for the new shape
                 JOptionPane.showMessageDialog(this, "No space available for new shape", "Warning", JOptionPane.WARNING_MESSAGE);
             }
         });
-        shapePanel.add(button);
+        shapePanel.add(button); //Adds button to Shape panel for user to select
     }
 
+    //Attemps to find unoccupied space to add the shape 100 times and then sends No space available message
     private CustomRectangle generateNonOverlappingShape(int width, int height, Color color) {
         int maxAttempts = 100;
         for (int i = 0; i < maxAttempts; i++) {
@@ -94,9 +102,10 @@ public class BoothFloorPlan extends JFrame {
                 return newShape;
             }
         }
-        return null; // Couldn't find non-overlapping position
+        return null; //null will trigger message
     }
 
+    //Searches for empty space
     private boolean overlapsWithExistingShapes(CustomRectangle newShape) {
         for (Shape shape : shapes) {
             if (shape instanceof CustomRectangle) {
@@ -109,22 +118,27 @@ public class BoothFloorPlan extends JFrame {
         return false;
     }
 
+    //Generates Random x value
     private int getRandomX(int width) {
         return random.nextInt(mainPanel.getWidth() - width + 1);
     }
 
+    //Generates Random y value
     private int getRandomY(int height) {
         return random.nextInt(mainPanel.getHeight() - height + 1);
     }
 
+    //Generates each shape in Drawing window
     interface Shape {
         void draw(Graphics g);
     }
+
 
     class CustomRectangle implements Shape {
         private int x, y, width, height;
         private Color color;
 
+        //Creates new Booth Object
         public CustomRectangle(int x, int y, int width, int height, Color color) {
             this.x = x;
             this.y = y;
@@ -133,6 +147,7 @@ public class BoothFloorPlan extends JFrame {
             this.color = color;
         }
 
+        //Draws booth on Drawing area
         @Override
         public void draw(Graphics g) {
             g.setColor(color);
@@ -141,6 +156,7 @@ public class BoothFloorPlan extends JFrame {
             g.drawRect(x, y, width, height);
         }
 
+        //Tests if any part of new object overlaps with any other object
         public boolean intersects(CustomRectangle other) {
             return !(this.x + this.width <= other.x || 
                      other.x + other.width <= this.x || 
@@ -149,6 +165,7 @@ public class BoothFloorPlan extends JFrame {
         }
     }
 
+    //Main function
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             BoothFloorPlan frame = new BoothFloorPlan();
