@@ -9,6 +9,10 @@ public class BoothFloorPlan extends JFrame {
     private JPanel shapePanel;
     private ArrayList<Shape> shapes;
     private Random random;
+    private int lastX = 10; // Starting x position
+    private int lastY = 10; // Starting y position
+    private static final int PADDING = 10; // Space between rectangles
+    private int maxRowHeight = 0;
 
     //Floor Plan Manager
     //Begin GUI Display screen
@@ -70,6 +74,8 @@ public class BoothFloorPlan extends JFrame {
         JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(e -> {
             shapes.clear();
+            lastX = 10;
+            lastY = 10;
             mainPanel.repaint();
         });
         shapePanel.add(Box.createVerticalStrut(20));
@@ -93,18 +99,38 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(button); //Adds button to Shape panel for user to select
     }
 
-    //Attemps to find unoccupied space to add the shape 100 times and then sends No space available message
+    //Attempts to find unoccupied space to add the shape 100 times and then sends No space available message
     private CustomRectangle generateNonOverlappingShape(int width, int height, Color color) {
-        int maxAttempts = 100;
-        for (int i = 0; i < maxAttempts; i++) {
-            int x = getRandomX(width);
-            int y = getRandomY(height);
-            CustomRectangle newShape = new CustomRectangle(x, y, width, height, color);
-            if (!overlapsWithExistingShapes(newShape)) {
-                return newShape;
+        int x = getNextAvailableX(width);
+        int y = getNextAvailableY(height);
+        CustomRectangle newShape = new CustomRectangle(x, y, width, height, color);
+        // Adjust y-coordinate if the shape overlaps
+        while (overlapsWithExistingShapes(newShape)) {
+            y += height + PADDING;
+            if (y + height > mainPanel.getHeight()) {
+                return null; // No space left in the panel
             }
+            newShape = new CustomRectangle(x, y, width, height, color);
         }
-        return null; //null will trigger message
+
+        lastX = x + width + PADDING;
+        maxRowHeight = Math.max(maxRowHeight, height); // Update max row height
+
+        if (lastX + width > mainPanel.getWidth()) {
+            lastX = PADDING;
+            lastY = y + maxRowHeight + PADDING; // Move to new row
+            maxRowHeight = 0; // Reset row height
+        }
+
+        return newShape;
+    }
+
+    private int getNextAvailableX(int width) {
+        return (lastX + width > mainPanel.getWidth()) ? PADDING : lastX;
+    }
+
+    private int getNextAvailableY(int height) {
+        return (lastY + height > mainPanel.getHeight()) ? PADDING : lastY;
     }
 
     //Searches for empty space
@@ -120,21 +146,9 @@ public class BoothFloorPlan extends JFrame {
         return false;
     }
 
-    //Generates Random x value
-    private int getRandomX(int width) {
-        return random.nextInt(mainPanel.getWidth() - width + 1);
-    }
-
-    //Generates Random y value
-    private int getRandomY(int height) {
-        return random.nextInt(mainPanel.getHeight() - height + 1);
-    }
-
-    //Generates each shape in Drawing window
     interface Shape {
         void draw(Graphics g);
     }
-
 
     class CustomRectangle implements Shape {
         private int x, y, width, height;
