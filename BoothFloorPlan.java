@@ -3,12 +3,15 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
+import java.awt.event.*;
 
 public class BoothFloorPlan extends JFrame {
     private JPanel mainPanel;
     private JPanel shapePanel;
     private FloorPlanController controller;
     private String planName;
+    private CustomRectangle draggingShape;
+    private int offsetX, offsetY;
 
     public BoothFloorPlan() {
         this(null);
@@ -36,7 +39,38 @@ public class BoothFloorPlan extends JFrame {
             loadFloorPlan(planName);
         }
 
-    
+        // Add mouse listeners
+        mainPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                draggingShape = controller.getShapeAt(e.getX(), e.getY());
+                if (draggingShape != null) {
+                    offsetX = e.getX() - draggingShape.x;
+                    offsetY = e.getY() - draggingShape.y;
+                    draggingShape.startDragging(draggingShape.x, draggingShape.y);
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (draggingShape != null) {
+                    draggingShape.stopDragging();
+                    draggingShape = null;
+                }
+            }
+        });
+
+        mainPanel.addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                if (draggingShape != null) {
+                    int newX = e.getX() - offsetX;
+                    int newY = e.getY() - offsetY;
+                    draggingShape.dragTo(newX, newY);
+                    mainPanel.repaint();
+                }
+            }
+        });
     }
 
     private void setupMenuBar() {
@@ -237,6 +271,18 @@ class FloorPlanController {
     public void setFloorPlan(FloorPlan floorPlan) {
         this.floorPlan = floorPlan;
     }
+
+    public CustomRectangle getShapeAt(int x, int y) {
+        for (Shape shape : floorPlan) {
+            if (shape instanceof CustomRectangle) {
+                CustomRectangle rect = (CustomRectangle) shape;
+                if (x >= rect.x && x <= rect.x + rect.width && y >= rect.y && y <= rect.y + rect.height) {
+                    return rect;
+                }
+            }
+        }
+        return null;
+    }
 }
 
 // Expert Pattern
@@ -248,10 +294,11 @@ interface Shape extends Iterable<Shape> {
 
 class CustomRectangle implements Shape, Serializable {
     private static final long serialVersionUID = 1L;
-    private int x, y;
+    public int x, y;
     int width;
     int height;
     Color color;
+    private boolean dragging;
 
     public CustomRectangle(int width, int height, Color color) {
         this.width = width;
@@ -263,6 +310,23 @@ class CustomRectangle implements Shape, Serializable {
     public void setPosition(int x, int y) {
         this.x = x;
         this.y = y;
+    }
+
+    public void startDragging(int startX, int startY) {
+        dragging = true;
+        this.x = startX;
+        this.y = startY;
+    }
+
+    public void dragTo(int newX, int newY) {
+        if (dragging) {
+            this.x = newX;
+            this.y = newY;
+        }
+    }
+
+    public void stopDragging() {
+        dragging = false;
     }
 
     @Override
