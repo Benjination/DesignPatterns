@@ -1,26 +1,24 @@
-import javax.swing.*;
 import javax.swing.border.Border;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-
-import javax.swing.*;
-import javax.swing.border.Border;
-import java.awt.*;
+import java.io.*;
 import java.util.*;
+import javax.swing.*;
 
 public class BoothFloorPlan extends JFrame {
     private JPanel mainPanel;
     private JPanel shapePanel;
     private FloorPlanController controller;
-    private Random random;
+    private String planName;
 
     public BoothFloorPlan() {
-        random = new Random();
+        this(null);
+    }
+
+    public BoothFloorPlan(String planName) {
+        this.planName = planName;
         controller = new FloorPlanController();
 
-        setTitle("Booth Floor Plan");
+        setTitle("Booth Floor Plan" + (planName != null ? " - " + planName : ""));
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -31,13 +29,24 @@ public class BoothFloorPlan extends JFrame {
         
         addShapeButtons();
         addClearButton();
+        addSaveButton();
+        addReturnToLandingPageButton();
+
+        if (planName != null) {
+            loadFloorPlan(planName);
+        }
+
+    
     }
 
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
+        JMenuItem saveItem = new JMenuItem("Save");
         JMenuItem exitItem = new JMenuItem("Exit");
+        saveItem.addActionListener(e -> saveFloorPlan());
         exitItem.addActionListener(e -> System.exit(0));
+        fileMenu.add(saveItem);
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
         setJMenuBar(menuBar);
@@ -97,10 +106,83 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(clearButton);
     }
 
+    private void addSaveButton() {
+        JButton saveButton = new JButton("Save");
+        saveButton.addActionListener(e -> saveFloorPlan());
+        shapePanel.add(Box.createVerticalStrut(20));
+        shapePanel.add(saveButton);
+    }
+
+    private void saveFloorPlan() {
+        if (planName == null) {
+            planName = JOptionPane.showInputDialog(this, "Enter a name for the floor plan:");
+        }
+        if (planName != null && !planName.isEmpty()) {
+            try {
+                File folder = new File("saved_plans");
+                if (!folder.exists()) {
+                    folder.mkdir();
+                }
+                FileOutputStream fileOut = new FileOutputStream("saved_plans/" + planName + ".ser");
+                ObjectOutputStream out = new ObjectOutputStream(fileOut);
+                out.writeObject(controller.getFloorPlan());
+                out.close();
+                fileOut.close();
+                JOptionPane.showMessageDialog(this, "Floor plan saved successfully.", "Save Successful", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException i) {
+                JOptionPane.showMessageDialog(this, "Error saving floor plan.", "Save Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void addReturnToLandingPageButton() {
+        JButton returnButton = new JButton("Home");
+        returnButton.addActionListener(e -> promptSaveAndReturn());
+        shapePanel.add(Box.createVerticalStrut(20));
+        shapePanel.add(returnButton);
+    }
+
+    private void returnToLandingPage() {
+        SwingUtilities.invokeLater(() -> {
+            LandingPage landingPage = new LandingPage();
+            landingPage.setVisible(true);
+            this.dispose(); // Close the current BoothFloorPlan window
+        });
+    }
+
+    private void promptSaveAndReturn() {
+        int option = JOptionPane.showConfirmDialog(this,
+                "Do you want to save the current floor plan before returning?",
+                "Save Floor Plan",
+                JOptionPane.YES_NO_CANCEL_OPTION);
+    
+        if (option == JOptionPane.YES_OPTION) {
+            saveFloorPlan();
+            returnToLandingPage();
+        } else if (option == JOptionPane.NO_OPTION) {
+            returnToLandingPage();
+        }
+        // If CANCEL_OPTION, do nothing and stay on the current page
+    }
+
+    private void loadFloorPlan(String planName) {
+        try {
+            FileInputStream fileIn = new FileInputStream("saved_plans/" + planName + ".ser");
+            ObjectInputStream in = new ObjectInputStream(fileIn);
+            FloorPlan loadedPlan = (FloorPlan) in.readObject();
+            in.close();
+            fileIn.close();
+            controller.setFloorPlan(loadedPlan);
+            mainPanel.repaint();
+        } catch (IOException | ClassNotFoundException e) {
+            JOptionPane.showMessageDialog(this, "Error loading floor plan.", "Load Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            BoothFloorPlan frame = new BoothFloorPlan();
-            frame.setVisible(true);
+            LandingPage landingPage = new LandingPage();
+            landingPage.setVisible(true);
         });
     }
 }
@@ -147,6 +229,14 @@ class FloorPlanController {
         }
         return null;
     }
+
+    public FloorPlan getFloorPlan() {
+        return floorPlan;
+    }
+
+    public void setFloorPlan(FloorPlan floorPlan) {
+        this.floorPlan = floorPlan;
+    }
 }
 
 // Expert Pattern
@@ -156,7 +246,8 @@ interface Shape extends Iterable<Shape> {
     void setPosition(int x, int y);
 }
 
-class CustomRectangle implements Shape {
+class CustomRectangle implements Shape, Serializable {
+    private static final long serialVersionUID = 1L;
     private int x, y;
     int width;
     int height;
@@ -202,7 +293,8 @@ class CustomRectangle implements Shape {
 }
 
 //Composite Pattern
-class FloorPlan implements Shape {
+class FloorPlan implements Shape, Serializable {
+    private static final long serialVersionUID = 1L;
     private final ArrayList<Shape> components = new ArrayList<>();
 
     @Override
@@ -246,7 +338,7 @@ class FloorPlan implements Shape {
     }
 }
 
-//Flyweight pattern
+// Flyweight pattern
 class RectangleFactory {
     private final HashMap<String, CustomRectangle> rectangles = new HashMap<>();
 
