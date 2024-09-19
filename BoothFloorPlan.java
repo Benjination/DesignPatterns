@@ -31,6 +31,7 @@ public class BoothFloorPlan extends JFrame {
         setupMainPanel();
         
         addShapeButtons();
+        addDeleteButton();
         addClearButton();
         addSaveButton();
         addReturnToLandingPageButton();
@@ -43,12 +44,19 @@ public class BoothFloorPlan extends JFrame {
         mainPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
-                draggingShape = controller.getShapeAt(e.getX(), e.getY());
-                if (draggingShape != null) {
+                CustomRectangle clickedShape = controller.getShapeAt(e.getX(), e.getY());
+                // Set selection state
+                controller.selectShape(clickedShape);
+                if (clickedShape != null) {
+                    draggingShape = clickedShape;
                     offsetX = e.getX() - draggingShape.x;
                     offsetY = e.getY() - draggingShape.y;
                     draggingShape.startDragging(draggingShape.x, draggingShape.y);
+                } else if (draggingShape != null) {
+                    draggingShape.setSelected(false); // Deselect if no shape is clicked
+                    draggingShape = null;
                 }
+                mainPanel.repaint(); // Update the panel to reflect changes
             }
 
             @Override
@@ -128,6 +136,22 @@ public class BoothFloorPlan extends JFrame {
             mainPanel.repaint();
         });
         shapePanel.add(button);
+    }
+
+    private void addDeleteButton() {
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener(e -> {
+            CustomRectangle selectedShape = controller.getSelectedShape();
+            if (selectedShape != null) {
+                controller.getFloorPlan().remove(selectedShape); // Remove the selected shape
+                controller.selectShape(null); // Deselect shape after deletion
+                mainPanel.repaint();
+            } else {
+                JOptionPane.showMessageDialog(this, "No shape selected for deletion.", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        shapePanel.add(Box.createVerticalStrut(20));
+        shapePanel.add(deleteButton);
     }
 
     private void addClearButton() {
@@ -226,6 +250,7 @@ class FloorPlanController {
     private FloorPlan floorPlan;
     private RectangleFactory rectangleFactory;
     private Random random;
+    private CustomRectangle selectedShape; // Track the currently selected shape
 
     public FloorPlanController() {
         this.floorPlan = new FloorPlan();
@@ -244,6 +269,7 @@ class FloorPlanController {
 
     public void clearFloorPlan() {
         floorPlan.clear();
+        selectedShape = null; // Clear selection when the floor plan is cleared
     }
 
     public void drawFloorPlan(Graphics g) {
@@ -283,6 +309,20 @@ class FloorPlanController {
         }
         return null;
     }
+
+    public void selectShape(CustomRectangle shape) {
+        if (selectedShape != null) {
+            selectedShape.setSelected(false);
+        }
+        selectedShape = shape;
+        if (selectedShape != null) {
+            selectedShape.setSelected(true);
+        }
+    }
+
+    public CustomRectangle getSelectedShape() {
+        return selectedShape;
+    }
 }
 
 // Expert Pattern
@@ -299,6 +339,7 @@ class CustomRectangle implements Shape, Serializable {
     int height;
     Color color;
     private boolean dragging;
+    private boolean selected = false; // Add a selected flag
 
     public CustomRectangle(int width, int height, Color color) {
         this.width = width;
@@ -329,10 +370,23 @@ class CustomRectangle implements Shape, Serializable {
         dragging = false;
     }
 
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
     @Override
     public void draw(Graphics g) {
         g.setColor(color);
         g.fillRect(x, y, width, height);
+        if (selected) {
+            // Draw a highlighted border when selected
+            g.setColor(Color.RED);
+            g.drawRect(x - 2, y - 2, width + 4, height + 4); // Highlight effect
+        }
         g.setColor(Color.BLACK);
         g.drawRect(x, y, width, height);
     }
@@ -366,6 +420,10 @@ class FloorPlan implements Shape, Serializable {
         for (Shape component : components) {
             component.draw(g);
         }
+    }
+
+    public void remove(CustomRectangle shape) {
+        components.remove(shape);
     }
 
     @Override
