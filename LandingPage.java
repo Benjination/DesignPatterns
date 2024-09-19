@@ -7,6 +7,7 @@ public class LandingPage extends JFrame {
     private DefaultListModel<String> listModel;
 
     public LandingPage() {
+        //Setup GUI
         setTitle("Floor Plan Manager");
         setSize(600, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -29,13 +30,12 @@ public class LandingPage extends JFrame {
         savedPlansList = new JList<>(listModel);
         JScrollPane listScrollPane = new JScrollPane(savedPlansList);
         add(listScrollPane, BorderLayout.CENTER);
-
         add(buttonPanel, BorderLayout.NORTH);
         add(listScrollPane, BorderLayout.CENTER);
-
         loadSavedPlans();
     }
 
+    //Creates a new floor plan
     private void createNewFloorPlan() {
         SwingUtilities.invokeLater(() -> {
             BoothFloorPlan frame = new BoothFloorPlan();
@@ -44,6 +44,7 @@ public class LandingPage extends JFrame {
         this.dispose();
     }
 
+    //Loads existing Floorplan
     private void loadSelectedFloorPlan() {
         String selectedPlan = savedPlansList.getSelectedValue();
         if (selectedPlan != null) {
@@ -57,6 +58,7 @@ public class LandingPage extends JFrame {
         }
     }
 
+    //Method to actually move file and load serialized data
     private void loadSavedPlans() {
         listModel.clear();
         File folder = new File("saved_plans");
@@ -70,6 +72,7 @@ public class LandingPage extends JFrame {
         }
     }
 
+    //deletes selected floorplan
     private void deleteSelectedFloorPlan() {
         String selectedPlan = savedPlansList.getSelectedValue();
         if (selectedPlan != null) {
@@ -95,6 +98,7 @@ public class LandingPage extends JFrame {
         }
     }
 
+    //MAIN
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             LandingPage landingPage = new LandingPage();

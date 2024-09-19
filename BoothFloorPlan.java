@@ -21,35 +21,38 @@ public class BoothFloorPlan extends JFrame {
         this.planName = planName;
         controller = new FloorPlanController();
 
+        //Main Frame
         setTitle("Booth Floor Plan" + (planName != null ? " - " + planName : ""));
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
 
+        //Creates GUI sections
         setupMenuBar();
         setupShapePanel();
         setupMainPanel();
         
+        //buttons
         addShapeButtons();
         addDeleteButton();
         addClearButton();
         addSaveButton();
         addReturnToLandingPageButton();
 
+        //generates data from saved file if information was loaded
         if (planName != null) {
             loadFloorPlan(planName);
         }
 
-        // Add mouse listeners
+        //Listens for user to select Shape in drawing area
         mainPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 CustomRectangle clickedShape = controller.getShapeAt(e.getX(), e.getY());
-                // Set selection state
                 controller.selectShape(clickedShape);
                 if (clickedShape != null) {
                     draggingShape = clickedShape;
-                    offsetX = e.getX() - draggingShape.x;
+                    offsetX = e.getX() - draggingShape.x;//Updates x,y when dragged
                     offsetY = e.getY() - draggingShape.y;
                     draggingShape.startDragging(draggingShape.x, draggingShape.y);
                 } else if (draggingShape != null) {
@@ -80,7 +83,7 @@ public class BoothFloorPlan extends JFrame {
             }
         });
     }
-
+    //Creates menu bar with File Menu
     private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
@@ -94,6 +97,7 @@ public class BoothFloorPlan extends JFrame {
         setJMenuBar(menuBar);
     }
 
+    //Creates shape panel
     private void setupShapePanel() {
         shapePanel = new JPanel();
         shapePanel.setPreferredSize(new Dimension(150, 400));
@@ -105,6 +109,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.setBorder(shapePanelBorder);
     }
 
+    //Creates Drawing Area and paints object images in collection
     private void setupMainPanel() {
         mainPanel = new JPanel() {
             @Override
@@ -120,12 +125,14 @@ public class BoothFloorPlan extends JFrame {
         add(mainPanel, BorderLayout.CENTER);
     }
 
+    //Adds shape selction options to shape panel
     private void addShapeButtons() {
         addShapeButton("Large", 100, 60, Color.BLUE);
         addShapeButton("Medium", 50, 30, Color.GREEN);
         addShapeButton("Small", 30, 30, new Color(128, 0, 128));
     }
 
+    //Finds space in drawing area to insert new shape image, and adds shape image if space is found
     private void addShapeButton(String name, int width, int height, Color color) {
         JButton button = new JButton(name);
         button.addActionListener(e -> {
@@ -138,6 +145,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(button);
     }
 
+    //Creates delete button in shape panel and allows deletion of single booth
     private void addDeleteButton() {
         JButton deleteButton = new JButton("Delete");
         deleteButton.addActionListener(e -> {
@@ -154,6 +162,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(deleteButton);
     }
 
+    //Adds Clear button to shape panel to delete all booths at once
     private void addClearButton() {
         JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(e -> {
@@ -164,6 +173,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(clearButton);
     }
 
+    //Creates save button in shape panel and allows user to save file
     private void addSaveButton() {
         JButton saveButton = new JButton("Save");
         saveButton.addActionListener(e -> saveFloorPlan());
@@ -171,6 +181,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(saveButton);
     }
 
+    //Method to save file
     private void saveFloorPlan() {
         if (planName == null) {
             planName = JOptionPane.showInputDialog(this, "Enter a name for the floor plan:");
@@ -193,6 +204,7 @@ public class BoothFloorPlan extends JFrame {
         }
     }
 
+    //Adds Home button to shape panel, prompts save message and returns user to landing page
     private void addReturnToLandingPageButton() {
         JButton returnButton = new JButton("Home");
         returnButton.addActionListener(e -> promptSaveAndReturn());
@@ -200,6 +212,7 @@ public class BoothFloorPlan extends JFrame {
         shapePanel.add(returnButton);
     }
 
+    //Method to navigate back to Landing Page
     private void returnToLandingPage() {
         SwingUtilities.invokeLater(() -> {
             LandingPage landingPage = new LandingPage();
@@ -208,6 +221,7 @@ public class BoothFloorPlan extends JFrame {
         });
     }
 
+    //Gives user the option to save file before navigating away from design page
     private void promptSaveAndReturn() {
         int option = JOptionPane.showConfirmDialog(this,
                 "Do you want to save the current floor plan before returning?",
@@ -223,6 +237,7 @@ public class BoothFloorPlan extends JFrame {
         // If CANCEL_OPTION, do nothing and stay on the current page
     }
 
+    //Method to load existing file and paint shape images on drawing area
     private void loadFloorPlan(String planName) {
         try {
             FileInputStream fileIn = new FileInputStream("saved_plans/" + planName + ".ser");
@@ -237,6 +252,7 @@ public class BoothFloorPlan extends JFrame {
         }
     }
 
+    //MAIN
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             LandingPage landingPage = new LandingPage();
@@ -244,6 +260,7 @@ public class BoothFloorPlan extends JFrame {
         });
     }
 }
+
 
 // Controller Pattern
 class FloorPlanController {
@@ -258,6 +275,7 @@ class FloorPlanController {
         this.random = new Random();
     }
 
+    //Calls nonoverlapping to find space and adds new shape image to drawing area
     public boolean addShape(int width, int height, Color color, int maxWidth, int maxHeight) {
         CustomRectangle newShape = generateNonOverlappingShape(width, height, color, maxWidth, maxHeight);
         if (newShape != null) {
@@ -267,15 +285,18 @@ class FloorPlanController {
         return false;
     }
 
+    //Method to clear all images from drawing area
     public void clearFloorPlan() {
         floorPlan.clear();
-        selectedShape = null; // Clear selection when the floor plan is cleared
+        selectedShape = null; 
     }
 
+    //Sends Floorplan to GUI
     public void drawFloorPlan(Graphics g) {
         floorPlan.draw(g);
     }
 
+    //Method to find unoccupied space in drawing area
     private CustomRectangle generateNonOverlappingShape(int width, int height, Color color, int maxWidth, int maxHeight) {
         int maxAttempts = 100;
         for (int i = 0; i < maxAttempts; i++) {
@@ -290,14 +311,17 @@ class FloorPlanController {
         return null;
     }
 
+    //gets Floorplan
     public FloorPlan getFloorPlan() {
         return floorPlan;
     }
 
+    //sets Floorplan
     public void setFloorPlan(FloorPlan floorPlan) {
         this.floorPlan = floorPlan;
     }
 
+    //Selects shape at certain coordinate
     public CustomRectangle getShapeAt(int x, int y) {
         for (Shape shape : floorPlan) {
             if (shape instanceof CustomRectangle) {
@@ -310,6 +334,7 @@ class FloorPlanController {
         return null;
     }
 
+    //Method to change status of selected shape
     public void selectShape(CustomRectangle shape) {
         if (selectedShape != null) {
             selectedShape.setSelected(false);
@@ -320,18 +345,20 @@ class FloorPlanController {
         }
     }
 
+    //getter
     public CustomRectangle getSelectedShape() {
         return selectedShape;
     }
 }
 
-// Expert Pattern
+//////////////////////////////////////////////////////////////// Expert Pattern
 interface Shape extends Iterable<Shape> {
     void draw(Graphics g);
     boolean intersects(Shape other);
     void setPosition(int x, int y);
 }
 
+//Makes shape serializeable for saving and loading data
 class CustomRectangle implements Shape, Serializable {
     private static final long serialVersionUID = 1L;
     public int x, y;
@@ -378,19 +405,20 @@ class CustomRectangle implements Shape, Serializable {
         return selected;
     }
 
+    //Draws a highlighted border when image is selected
     @Override
     public void draw(Graphics g) {
         g.setColor(color);
         g.fillRect(x, y, width, height);
         if (selected) {
-            // Draw a highlighted border when selected
             g.setColor(Color.RED);
-            g.drawRect(x - 2, y - 2, width + 4, height + 4); // Highlight effect
+            g.drawRect(x - 2, y - 2, width + 4, height + 4); 
         }
         g.setColor(Color.BLACK);
         g.drawRect(x, y, width, height);
     }
 
+    //Checks if objects intersect
     @Override
     public boolean intersects(Shape other) {
         if (other instanceof CustomRectangle) {
@@ -403,14 +431,14 @@ class CustomRectangle implements Shape, Serializable {
         return false;
     }
 
-    //Iterator pattern
+    ////////////////////////////////////////////////////////////////////Iterator pattern
     @Override
     public Iterator<Shape> iterator() {
         return Collections.emptyIterator();
     }
 }
 
-//Composite Pattern
+////////////////////////////////////////////////////////////////////////Composite Pattern
 class FloorPlan implements Shape, Serializable {
     private static final long serialVersionUID = 1L;
     private final ArrayList<Shape> components = new ArrayList<>();
@@ -453,14 +481,14 @@ class FloorPlan implements Shape, Serializable {
         return intersects(newShape);
     }
 
-    // Iterator Pattern
+    /////////////////////////////////////////////////////////////////////////////////Iterator Pattern
     @Override
     public Iterator<Shape> iterator() {
         return components.iterator();
     }
 }
 
-// Flyweight pattern
+///////////////////////////////////////////////////////////////////////////////////// Flyweight pattern
 class RectangleFactory {
     private final HashMap<String, CustomRectangle> rectangles = new HashMap<>();
 
