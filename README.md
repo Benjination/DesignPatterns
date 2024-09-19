@@ -1,8 +1,7 @@
 # DesignPatterns
 YouTube Demonstration: https://youtu.be/mNjMNyZUi5Q?si=1c0YodUp1bDt7D5s
 
-# GitHub:
-https://github.com/Benjination/DesignPatterns
+GitHub: https://github.com/Benjination/DesignPatterns
 
 ## Booth Floor Plan Application
 
