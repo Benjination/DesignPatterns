@@ -1,7 +1,8 @@
 # DesignPatterns
 YouTube Demonstration: https://youtu.be/mNjMNyZUi5Q?si=1c0YodUp1bDt7D5s
 
-Here's a README for the provided code, highlighting the design patterns applied:
+GitHub:
+https://github.com/Benjination/DesignPatterns
 
 ## Booth Floor Plan Application
 
@@ -58,6 +59,3 @@ The `RectangleFactory` class implements the Flyweight pattern to efficiently man
 - The main drawing area updates in real-time as shapes are added or moved
 
 This README provides an overview of the Booth Floor Plan application, highlighting its key features, design patterns, and usage instructions.
-
-Citations:
-[1] https://ppl-ai-file-upload.s3.amazonaws.com/web/direct-files/4916938/47701d7d-756d-423f-9c3a-00b46164f40c/paste.txt
